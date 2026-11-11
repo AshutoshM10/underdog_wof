@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Underdog Woof Launcher Shortcut
+# ==============================================================================
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_PYTHON="$SCRIPT_DIR/.venv/bin/python"
+MODEL_WEIGHTS="$SCRIPT_DIR/woof_int8.npz"
+
+# Pre-flight check: ensure venv, imports, and model weights are ready
+if [ ! -x "$VENV_PYTHON" ] || \
+   ! "$VENV_PYTHON" -c "import numpy; import underdog_woof" 2>/dev/null || \
+   [ ! -f "$MODEL_WEIGHTS" ]; then
+    echo "Pre-flight check detected missing setup. Running setup.sh..."
+    bash "$SCRIPT_DIR/setup.sh"
+fi
+
+# Launch Web UI if --web flag is provided
+if [ "$1" = "--web" ]; then
+    echo "Starting Underdog Woof Web UI..."
+    echo "URL: http://127.0.0.1:8000"
+    exec "$VENV_PYTHON" "$SCRIPT_DIR/webui.py"
+fi
+
+# Otherwise, pass all arguments directly to underdog_woof
+exec "$VENV_PYTHON" -m underdog_woof "$@"
